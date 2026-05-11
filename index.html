@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Bank - Data Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #FFE4E1;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #8B0000;
+            margin-bottom: 30px;
+            font-size: 36px;
+            border-bottom: 3px solid #8B0000;
+            padding-bottom: 10px;
+        }
+        .section-title {
+            text-align: center;
+            color: #8B0000;
+            margin: 30px 0 20px 0;
+            font-size: 28px;
+            background: #FFB6C1;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .question-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-right: 5px solid #FF69B4;
+        }
+        .question-number {
+            display: inline-block;
+            background: #FF69B4;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .question-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .option-btn {
+            padding: 10px 25px;
+            border: 2px solid #FF69B4;
+            background: white;
+            color: #FF69B4;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .option-btn:hover {
+            background: #FF69B4;
+            color: white;
+        }
+        .option-btn.correct {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+        .option-btn.wrong {
+            background: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+        .feedback {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: none;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .feedback.wrong {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        .score-board {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-size: 18px;
+            z-index: 1000;
+            border: 2px solid #FF69B4;
+        }
+        .score-board span {
+            color: #FF69B4;
+            font-weight: bold;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #FFE4E1;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #FF69B4;
+            border-radius: 5px;
+            transition: width 0.5s;
+        }
+        .tab-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 12px 30px;
+            border: none;
+            background: #FFB6C1;
+            color: #8B0000;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .tab-btn:hover {
+            background: #FF69B4;
+            color: white;
+        }
+        .tab-btn.active {
+            background: #FF69B4;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .mcq-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .mcq-option-btn {
+            padding: 12px 20px;
+            border: 2px solid #FF69B4;
+            background: white;
+            color: #333;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 16px;
+            text-align: right;
+            transition: all 0.3s;
+        }
+        .mcq-option-btn:hover {
+            background: #FFF0F5;
+        }
+        .mcq-option-btn.correct {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+        .mcq-option-btn.wrong {
+            background: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="score-board">
+        ✅ صح: <span id="correct-count">0</span> | ❌ غلط: <span id="wrong-count">0</span>
+    </div>
+
+    <div class="container">
+        <h1>Question Bank - Data Analysis</h1>
+
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="showTab('tf')">صح / غلط (60)</button>
+            <button class="tab-btn" onclick="showTab('mcq')">اختيار من متعدد (50)</button>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+
+        <!-- True/False Section -->
+        <div id="tf" class="tab-content active">
+            <div class="section-title">أسئلة صح وغلط (60 سؤال)</div>
+            <div id="tf-questions"></div>
+        </div>
+
+        <!-- MCQ Section -->
+        <div id="mcq" class="tab-content">
+            <div class="section-title">أسئلة اختيار من متعدد (50 سؤال)</div>
+            <div id="mcq-questions"></div>
+        </div>
+    </div>
+
+<script>
+let correctCount = 0;
+let wrongCount = 0;
+let answeredQuestions = new Set();
+
+function updateScore() {
+    document.getElementById('correct-count').textContent = correctCount;
+    document.getElementById('wrong-count').textContent = wrongCount;
+    const total = 110;
+    const progress = (answeredQuestions.size / total) * 100;
+    document.getElementById('progress-fill').style.width = progress + '%';
+}
+
+function showTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    event.target.classList.add('active');
+}
+
+// ===================== TRUE/FALSE QUESTIONS (60) =====================
+const tfQuestions = [
+    {q: "Hardware includes physical equipment used for input, output, and processing.", a: true, exp: "Hardware includes physical components such as keyboard (input), monitor (output), CPU (processing), network and security devices."},
+    {q: "Software is the application program used to control and coordinate hardware.", a: false, exp: "System software (like operating systems) controls and coordinates hardware. Application software performs specific tasks for users."},
+    {q: "Data are organized facts used to generate information immediately.", a: false, exp: "Data are raw, unorganized facts that are later processed into information."},
+    {q: "Database software is used for efficient access to required data.", a: true, exp: "DBMS organizes, stores, retrieves, and manages data securely and efficiently."},
+    {q: "A Network consists of only one computer connected to a printer.", a: false, exp: "A network is a set of computers connected together to share resources."},
+    {q: "People are the most important component of an information system.", a: true, exp: "People develop, manage, and use the information system. They are the most critical component."},
+    {q: "System design is the process of creating a high-level architecture for a software solution.", a: true, exp: "System design involves creating a high-level architecture and plan for a software solution that meets requirements and constraints."},
+    {q: "The System Development Life Cycle (SDLC) has only 3 stages.", a: false, exp: "SDLC typically consists of multiple stages including planning, analysis, design, implementation, and maintenance (7 stages total)."},
+    {q: "User Interface (UI) design focuses on how a user interacts with a system.", a: true, exp: "UI design focuses on designing how users interact with the system for optimal user experience."},
+    {q: "A Centralized System means data processing occurs in one single center.", a: true, exp: "In a centralized system, all data processing occurs at one central location."},
+    {q: "System Software includes Device Drivers and Firmware.", a: true, exp: "System software includes operating systems, device drivers, firmware, and utility software."},
+    {q: "Analysis is the stage where the actual code is written.", a: false, exp: "Coding happens in the Implementation/Development stage. Analysis focuses on understanding problems and requirements."},
+    {q: "Feasibility studies help determine if a project should move forward.", a: true, exp: "Feasibility studies evaluate economic, technical, and operational aspects to decide if a project is viable."},
+    {q: "Direct cutover is a method of moving components from an old system to a new one.", a: true, exp: "Direct cutover is an implementation strategy where the old system is replaced immediately by the new system."},
+    {q: "Dialogue design is a sequence of information displayed to and obtained from a user.", a: true, exp: "Dialogue design involves creating the sequence of screens and interactions between the user and the system."},
+    {q: "Operating systems are a type of Application Software.", a: false, exp: "Operating systems are System Software, not Application Software."},
+    {q: "Maintenance is the last stage of the SDLC.", a: true, exp: "Maintenance is the final stage of SDLC, involving ongoing support, updates, and bug fixes."},
+    {q: "Scalability is a decision made during the system design phase.", a: true, exp: "Scalability (system's ability to grow) is a key decision made during the system design phase."},
+    {q: "Information systems cannot work without data.", a: true, exp: "Data is essential for information systems to process and generate useful information."},
+    {q: "Secondary storage is used to store data temporarily during processing.", a: false, exp: "Secondary storage (like hard disks) is for permanent storage. RAM is used for temporary storage during processing."},
+    {q: "User requirements are identified during the Design phase.", a: false, exp: "User requirements are identified during the Analysis phase, not the Design phase."},
+    {q: "Decentralized systems have a processing center for each major department.", a: true, exp: "In decentralized systems, each department has its own processing center."},
+    {q: "Utility software is a type of system software.", a: true, exp: "Utility software (antivirus, disk cleanup) is classified as system software."},
+    {q: "Testing ensures the program is successful before client production.", a: true, exp: "Testing validates the system against requirements to identify and fix defects before deployment."},
+    {q: "Dialogue diagrams use boxes with three sections.", a: true, exp: "Dialogue diagrams use boxes with three sections to represent different parts of the user interaction."},
+    {q: "System design involves making decisions about security and performance.", a: true, exp: "System design involves decisions about components, interactions, data flows, scalability, reliability, security, and performance."},
+    {q: "A Network allows for the sharing of resources like printers.", a: true, exp: "Networks enable multiple computers to share resources such as printers, files, and internet connections."},
+    {q: "Database Management Systems (DBMS) manage data storage.", a: true, exp: "DBMS manages storage, retrieval, and organization of data efficiently."},
+    {q: "People are not considered a component of Information Systems.", a: false, exp: "People are one of the five main components of an information system (hardware, software, data, procedures, people)."},
+    {q: "Processors are considered a hardware component.", a: true, exp: "Processors (CPUs) are physical devices and therefore hardware components."},
+    {q: "System design meets the constraints of a problem.", a: true, exp: "System design creates a solution that meets the requirements and constraints of the problem."},
+    {q: "Analysis phase results include a clear definition of the problem.", a: true, exp: "The analysis phase produces a clear problem definition, feasibility study results, and system requirements."},
+    {q: "The budget for a new system is determined after it is built.", a: false, exp: "The budget is part of the feasibility study and planning phase, determined before building the system."},
+    {q: "Monitoring for bugs occurs during the Operations and Maintenance phase.", a: true, exp: "Bug monitoring and fixing are ongoing activities during the Operations and Maintenance phase."},
+    {q: "Dialogue diagrams represent the sequencing of displays.", a: true, exp: "Dialogue diagrams show the sequence of screens/displays in user interactions."},
+    {q: "Input devices are part of the hardware structure.", a: true, exp: "Input devices (keyboard, mouse, scanner) are physical hardware components."},
+    {q: "Application software coordinates hardware components.", a: false, exp: "System software coordinates hardware; Application software performs specific tasks for users."},
+    {q: "Data flows are a key consideration in system design.", a: true, exp: "Data flows between components are a critical consideration in system design."},
+    {q: "Decentralization can improve data processing speed for specific departments.", a: true, exp: "Decentralization allows departments to process data locally, potentially improving speed."},
+    {q: "Implementation includes the process of Direct Cutover.", a: true, exp: "Direct Cutover is one of the implementation strategies used when deploying a new system."},
+    {q: "User Interface design includes the Principles for good design.", a: true, exp: "UI design incorporates principles like consistency, simplicity, feedback, and user control."},
+    {q: "System Analysis results include a description of the current system.", a: true, exp: "System analysis documents the current system's processes, problems, and requirements."},
+    {q: "Computer peripherals are NOT considered hardware.", a: false, exp: "Peripherals (printers, scanners, monitors) are physical devices and ARE considered hardware."},
+    {q: "Operations and Maintenance identify parts of a system that need improving.", a: true, exp: "During maintenance, system weaknesses are identified and improvements are made."},
+    {q: "A bidirectional line in a dialogue diagram connects sections.", a: true, exp: "Bidirectional lines in dialogue diagrams show connections between different sections of the dialogue."},
+    {q: "An information system consists of unrelated components.", a: false, exp: "An information system consists of interrelated components that work together to achieve a common goal."},
+    {q: "Hardware includes input, output, and processing devices.", a: true, exp: "Hardware includes physical components such as keyboard (input), monitor (output), and CPU (processing)."},
+    {q: "Software is only used for entertainment purposes.", a: false, exp: "Software controls hardware and processes data. It is used in banking, education, hospitals, accounting systems, etc."},
+    {q: "Data are raw facts that must be processed to become information.", a: true, exp: "Data are unorganized facts (numbers, text). After processing, they become meaningful information."},
+    {q: "Database Management Systems (DBMS) manage data efficiently.", a: true, exp: "DBMS organizes, stores, retrieves, and manages data securely and efficiently."},
+    {q: "Procedures include step-by-step instructions for tasks.", a: true, exp: "Procedures ensure consistency, reduce errors, and guide employees in performing tasks correctly."},
+    {q: "Human resources include programmers and system analysts.", a: true, exp: "Human resources include all people who develop, manage, and use the information system."},
+    {q: "The main purpose of an information system is to benefit end users.", a: true, exp: "Information systems provide information that helps users make decisions and complete business tasks."},
+    {q: "ERP systems are examples of information systems.", a: true, exp: "ERP systems integrate different business functions using a centralized information system."},
+    {q: "Hardware can operate effectively without software.", a: false, exp: "Hardware needs software instructions to function. Without software, hardware cannot process data."},
+    {q: "System Analysis focuses mainly on programming activities.", a: false, exp: "System analysis focuses on understanding problems and requirements, not programming."},
+    {q: "The Planning Stage includes economic, technical, and operational feasibility.", a: true, exp: "Feasibility study in the planning stage evaluates economic, technical, and operational aspects."},
+    {q: "Functional requirements describe system performance and security only.", a: false, exp: "Functional requirements describe activities the system must perform. Performance and security are nonfunctional requirements."},
+    {q: "Users, clients, and technical staff are primary stakeholders.", a: true, exp: "These are the three main stakeholder groups in any information system project."},
+    {q: "Prototyping is used only after system implementation.", a: false, exp: "Prototypes are built during analysis for feasibility and requirement clarification, before implementation."}
+];
+
+// ===================== MCQ QUESTIONS (50) =====================
+const mcqQuestions = [
+    {q: "Which component is responsible for processing data?", options: ["Software", "Hardware", "Databases", "Networks"], correct: 1, exp: "Hardware (CPU/processor) is responsible for processing data physically."},
+    {q: "Raw facts and figures describe which component?", options: ["Information", "Knowledge", "Data", "Software"], correct: 2, exp: "Data are raw, unprocessed facts and figures before any processing."},
+    {q: "What are the three types of software mentioned?", options: ["System, Application, Utility", "Primary, Secondary, Tertiary", "Input, Output, Storage", "User, Admin, Guest"], correct: 0, exp: "The three main types are System Software, Application Software, and Utility Software."},
+    {q: "Which phase involves creating high-level architecture?", options: ["Planning", "Analysis", "System Design", "Implementation"], correct: 2, exp: "System Design is the phase where high-level architecture is created."},
+    {q: "A set of computers connected to share resources is a:", options: ["Database", "Processor", "Network", "Middleware"], correct: 2, exp: "A network is a set of computers connected together to share reso
