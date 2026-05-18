@@ -1,1060 +1,434 @@
-html_content = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCQ | MCQ Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Cairo', sans-serif;
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-        
-        .score-board {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-        
-        .score-item {
-            text-align: center;
-        }
-        
-        .score-item .number {
-            font-size: 2rem;
-            font-weight: 800;
-        }
-        
-        .score-item .label {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .correct { color: #22c55e; }
-        .wrong { color: #ef4444; }
-        .total { color: #11998e; }
-        
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e5e7eb;
-            border-radius: 10px;
-            margin-top: 15px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #11998e, #38ef7d);
-            border-radius: 10px;
-            transition: width 0.5s ease;
-        }
-        
-        .question-card {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.5s forwards;
-        }
-        
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .question-number {
-            display: inline-block;
-            background: linear-gradient(135deg, #11998e, #38ef7d);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-        
-        .question-text {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 25px;
-            line-height: 1.6;
-        }
-        
-        .options {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .option-btn {
-            padding: 15px 20px;
-            border: 2px solid #e5e7eb;
-            border-radius: 15px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Cairo', sans-serif;
-            text-align: right;
-            background: white;
-            color: #1f2937;
-        }
-        
-        .option-btn:hover {
-            border-color: #11998e;
-            background: #f0fdf4;
-            transform: translateX(-5px);
-        }
-        
-        .option-btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        
-        .option-btn.correct-answer {
-            background: #dcfce7;
-            border-color: #22c55e;
-            color: #166534;
-            box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
-        }
-        
-        .option-btn.wrong-answer {
-            background: #fee2e2;
-            border-color: #ef4444;
-            color: #991b1b;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
-        }
-        
-        .option-btn.selected-wrong {
-            background: #fee2e2;
-            border-color: #ef4444;
-            color: #991b1b;
-        }
-        
-        .option-letter {
-            display: inline-block;
-            background: linear-gradient(135deg, #11998e, #38ef7d);
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 32px;
-            font-weight: 700;
-            margin-left: 12px;
-            font-size: 0.9rem;
-        }
-        
-        .feedback {
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 15px;
-            display: none;
-            animation: slideDown 0.3s ease;
-        }
-        
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .feedback.correct-answer {
-            background: #dcfce7;
-            border: 2px solid #22c55e;
-            color: #166534;
-        }
-        
-        .feedback.wrong-answer {
-            background: #fee2e2;
-            border: 2px solid #ef4444;
-            color: #991b1b;
-        }
-        
-        .feedback-title {
-            font-weight: 800;
-            font-size: 1.2rem;
-            margin-bottom: 8px;
-        }
-        
-        .feedback-text {
-            font-size: 1rem;
-            line-height: 1.6;
-        }
-        
-        .next-btn {
-            background: linear-gradient(135deg, #11998e, #38ef7d);
-            color: white;
-            border: none;
-            padding: 12px 40px;
-            border-radius: 25px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 15px;
-            font-family: 'Cairo', sans-serif;
-            display: none;
-            transition: all 0.3s ease;
-        }
-        
-        .next-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
-        }
-        
-        .results-screen {
-            display: none;
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-        
-        .results-screen h2 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-            color: #1f2937;
-        }
-        
-        .final-score {
-            font-size: 4rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #11998e, #38ef7d);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 20px 0;
-        }
-        
-        .result-message {
-            font-size: 1.2rem;
-            color: #666;
-            margin-bottom: 30px;
-        }
-        
-        .restart-btn {
-            background: linear-gradient(135deg, #11998e, #38ef7d);
-            color: white;
-            border: none;
-            padding: 15px 50px;
-            border-radius: 30px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            cursor: pointer;
-            font-family: 'Cairo', sans-serif;
-            transition: all 0.3s ease;
-        }
-        
-        .restart-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(17, 153, 142, 0.4);
-        }
-        
-        .emoji {
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
-        
-        @media (max-width: 600px) {
-            .header h1 {
-                font-size: 1.8rem;
-            }
-            .question-text {
-                font-size: 1.1rem;
-            }
-            .option-btn {
-                font-size: 1rem;
-                padding: 12px 15px;
-            }
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>اختبار إدارة مشتريات ومخازن</title>
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:'Tahoma',sans-serif;
+    background:linear-gradient(135deg,#ffecd2,#fcb69f);
+    min-height:100vh;
+    padding:30px;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+}
+
+.main-card{
+    background:white;
+    border-radius:30px;
+    overflow:hidden;
+    box-shadow:0 15px 40px rgba(0,0,0,0.2);
+}
+
+.header{
+    background:linear-gradient(135deg,#ff6a00,#ee0979);
+    color:white;
+    padding:40px 20px;
+    text-align:center;
+}
+
+.header h1{
+    margin:0;
+    font-size:40px;
+}
+
+.header p{
+    margin-top:10px;
+    font-size:20px;
+}
+
+.section{
+    padding:30px;
+}
+
+.section-title{
+    font-size:28px;
+    margin-bottom:25px;
+    padding:15px;
+    border-radius:20px;
+    color:white;
+    text-align:center;
+}
+
+.mcq-title{
+    background:linear-gradient(135deg,#36d1dc,#5b86e5);
+}
+
+.tf-title{
+    background:linear-gradient(135deg,#11998e,#38ef7d);
+}
+
+.question{
+    background:#fff;
+    border-radius:20px;
+    padding:20px;
+    margin-bottom:20px;
+    border:3px solid #f3f4f6;
+    transition:0.3s;
+}
+
+.question:hover{
+    transform:translateY(-5px);
+    box-shadow:0 10px 20px rgba(0,0,0,0.1);
+}
+
+.question h3{
+    margin-top:0;
+    color:#222;
+    line-height:1.8;
+}
+
+label{
+    display:block;
+    background:#f9fafb;
+    padding:12px;
+    margin:10px 0;
+    border-radius:12px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+label:hover{
+    background:#ede9fe;
+}
+
+input[type="radio"]{
+    margin-left:10px;
+}
+
+.correct{
+    color:#059669;
+    font-weight:bold;
+    background:#d1fae5;
+    padding:10px;
+    border-radius:10px;
+    margin-top:10px;
+}
+
+.wrong{
+    color:#dc2626;
+    font-weight:bold;
+    background:#fee2e2;
+    padding:10px;
+    border-radius:10px;
+    margin-top:10px;
+}
+
+button{
+    width:100%;
+    padding:18px;
+    border:none;
+    border-radius:0;
+    background:linear-gradient(135deg,#ff6a00,#ee0979);
+    color:white;
+    font-size:24px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    opacity:0.9;
+}
+
+#result{
+    text-align:center;
+    padding:30px;
+    font-size:30px;
+    font-weight:bold;
+    color:#7c2d12;
+    background:#fff7ed;
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📝MCQ</h1>
-            <p>System Analysis & Design - 50 Q</p>
-        </div>
-        
-        <div class="score-board">
-            <div class="score-item">
-                <div class="number correct" id="correct-count">0</div>
-                <div class="label">صح ✅</div>
-            </div>
-            <div class="score-item">
-                <div class="number wrong" id="wrong-count">0</div>
-                <div class="label">خطأ ❌</div>
-            </div>
-            <div class="score-item">
-                <div class="number total" id="current-question">1/50</div>
-                <div class="label">السؤال الحالي</div>
-            </div>
-        </div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progress-fill" style="width: 2%"></div>
-        </div>
-        
-        <div id="quiz-container"></div>
-        
-        <div class="results-screen" id="results-screen">
-            <div class="emoji" id="result-emoji">🎉</div>
-            <h2>انتهى الاختبار!</h2>
-            <div class="final-score" id="final-score">0/50</div>
-            <div class="result-message" id="result-message"></div>
-            <button class="restart-btn" onclick="restartQuiz()">🔄 إعادة الاختبار</button>
-        </div>
-    </div>
 
-    <script>
-        const questions = [
-            {
-                q: "Which component is responsible for processing data?",
-                options: [
-                    { letter: "A", text: "Software" },
-                    { letter: "B", text: "Hardware" },
-                    { letter: "C", text: "Databases" },
-                    { letter: "D", text: "Networks" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - Hardware - الأجهزة (Hardware) هي المسؤولة عن معالجة البيانات."
-            },
-            {
-                q: "'Raw facts and figures' describe which component?",
-                options: [
-                    { letter: "A", text: "Information" },
-                    { letter: "B", text: "Knowledge" },
-                    { letter: "C", text: "Data" },
-                    { letter: "D", text: "Software" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - Data - 'الحقائق والأرقام الخام' تصف البيانات (Data)."
-            },
-            {
-                q: "What are the three types of software mentioned?",
-                options: [
-                    { letter: "A", text: "System, Application, Utility" },
-                    { letter: "B", text: "Primary, Secondary, Tertiary" },
-                    { letter: "C", text: "Input, Output, Storage" },
-                    { letter: "D", text: "User, Admin, Guest" }
-                ],
-                correct: 0,
-                exp: "الإجابة: A - System, Application, Utility - الأنواع الثلاثة من البرمجيات هي: برامج النظام، برامج التطبيقات، وبرامج الأدوات المساعدة."
-            },
-            {
-                q: "Which phase involves creating high-level architecture?",
-                options: [
-                    { letter: "A", text: "Planning" },
-                    { letter: "B", text: "Analysis" },
-                    { letter: "C", text: "System Design" },
-                    { letter: "D", text: "Implementation" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - System Design - مرحلة تصميم النظام هي التي تتضمن إنشاء البنية العالية المستوى."
-            },
-            {
-                q: "A set of computers connected to share resources is a:",
-                options: [
-                    { letter: "A", text: "Database" },
-                    { letter: "B", text: "Processor" },
-                    { letter: "C", text: "Network" },
-                    { letter: "D", text: "Middleware" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - Network - مجموعة من الأجهزة المتصلة لمشاركة الموارد تُسمى Network (شبكة)."
-            },
-            {
-                q: "Which of these is a hardware output device?",
-                options: [
-                    { letter: "A", text: "Keyboard" },
-                    { letter: "B", text: "Mouse" },
-                    { letter: "C", text: "Printer" },
-                    { letter: "D", text: "Scanner" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - Printer - الطابعة هي جهاز إخراج (Output Device)، بينما لوحة المفاتيح والفأرة والماسح الضوئي أجهزة إدخال."
-            },
-            {
-                q: "The process of designing the sequence for user interaction is:",
-                options: [
-                    { letter: "A", text: "Data Flow Design" },
-                    { letter: "B", text: "Dialogue Design" },
-                    { letter: "C", text: "Database Design" },
-                    { letter: "D", text: "Network Design" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - Dialogue Design - تصميم الحوار هو عملية تصميم تسلسل التفاعل مع المستخدم."
-            },
-            {
-                q: "In which SDLC stage do you monitor for bugs?",
-                options: [
-                    { letter: "A", text: "Design" },
-                    { letter: "B", text: "Testing" },
-                    { letter: "C", text: "Operations and Maintenance" },
-                    { letter: "D", text: "Analysis" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - Operations and Maintenance - مراقبة الأخطاء تحدث خلال مرحلة التشغيل والصيانة."
-            },
-            {
-                q: "Which system type has processing at each department?",
-                options: [
-                    { letter: "A", text: "Centralized" },
-                    { letter: "B", text: "Decentralized" },
-                    { letter: "C", text: "Unitary" },
-                    { letter: "D", text: "Singular" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - Decentralized - النظام اللامركزي (Decentralized) يكون فيه معالجة في كل قسم."
-            },
-            {
-                q: "A 'Direct Cutover' is part of which phase?",
-                options: [
-                    { letter: "A", text: "Maintenance" },
-                    { letter: "B", text: "Design" },
-                    { letter: "C", text: "Implementation" },
-                    { letter: "D", text: "Analysis" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - Implementation - التحويل المباشر (Direct Cutover) هو جزء من مرحلة التنفيذ."
-            },
-            {
-                q: "What is the goal of UI design?",
-                options: [
-                    { letter: "A", text: "To write code" },
-                    { letter: "B", text: "To design how users interact with the system" },
-                    { letter: "C", text: "To manage databases" },
-                    { letter: "D", text: "To fix hardware" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - To design how users interact with the system - هدف تصميم واجهة المستخدم هو تصميم كيفية تفاعل المستخدمين مع النظام."
-            },
-            {
-                q: "Which software is classified as System Software?",
-                options: [
-                    { letter: "A", text: "MS Word" },
-                    { letter: "B", text: "Device Drivers" },
-                    { letter: "C", text: "Games" },
-                    { letter: "D", text: "Web Browsers" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - Device Drivers - برامج تشغيل الأجهزة (Device Drivers) تُصنف كبرامج نظام (System Software)."
-            },
-            {
-                q: "Analysis results include which of the following?",
-                options: [
-                    { letter: "A", text: "Final Code" },
-                    { letter: "B", text: "Hardware Purchase" },
-                    { letter: "C", text: "Feasibility study results" },
-                    { letter: "D", text: "User Manuals" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - Feasibility study results - نتائج التحليل تشمل نتائج دراسة الجدوى."
-            },
-            {
-                q: "Database software is used to manage:",
-                options: [
-                    { letter: "A", text: "Physical hardware" },
-                    { letter: "B", text: "Virtual resources" },
-                    { letter: "C", text: "Knowledge bases" },
-                    { letter: "D", text: "Network cables" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - Knowledge bases - برامج قواعد البيانات تُستخدم لإدارة قواعد المعرفة (Knowledge bases)."
-            },
-            {
-                q: "Dialogue diagrams use which symbol?",
-                options: [
-                    { letter: "A", text: "Circle" },
-                    { letter: "B", text: "Triangle" },
-                    { letter: "C", text: "Box with three sections" },
-                    { letter: "D", text: "Diamond" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - Box with three sections - مخططات الحوار تستخدم مربعات بثلاثة أقسام."
-            },
-            {
-                q: "'Scalability' refers to:",
-                options: [
-                    { letter: "A", text: "Data size" },
-                    { letter: "B", text: "System's ability to grow" },
-                    { letter: "C", text: "Network speed" },
-                    { letter: "D", text: "User happiness" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - System's ability to grow - 'قابلية التوسع' (Scalability) تشير إلى قدرة النظام على النمو."
-            },
-            {
-                q: "SDLC stands for:",
-                options: [
-                    { letter: "A", text: "System Design Logical Cycle" },
-                    { letter: "B", text: "Software Development Life Cycle" },
-                    { letter: "C", text: "System Development Life Cycle" },
-                    { letter: "D", text: "Standard Data Line Connection" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - System Development Life Cycle - SDLC تعني دورة حياة تطوير النظام."
-            },
-            {
-                q: "Which component coordinates hardware?",
-                options: [
-                    { letter: "A", text: "Users" },
-                    { letter: "B", text: "Application Software" },
-                    { letter: "C", text: "System Software" },
-                    { letter: "D", text: "Peripheral devices" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - System Software - برامج النظام (System Software) هي التي تنسق الأجهزة."
-            },
-            {
-               q: "Data are managed using:",
-                options: [
-                    { letter: "A", text: "CPU" },
-                    { letter: "B", text: "DBMS" },
-                    { letter: "C", text: "RAM" },
-                    { letter: "D", text: "BIOS" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - DBMS - البيانات تُدار باستخدام أنظمة إدارة قواعد البيانات (DBMS)."
-            },
-            {
-                q: "'Firmware' is a type of:",
-                options: [
-                    { letter: "A", text: "Hardware" },
-                    { letter: "B", text: "Database" },
-                    { letter: "C", text: "Software" },
-                    { letter: "D", text: "Network" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - Software - البرامج الثابتة (Firmware) هي نوع من البرمجيات."
-            },
-            {
-                q: "Who is the most important component of an IS?",
-                options: [
-                    { letter: "A", text: "Computers" },
-                    { letter: "B", text: "Data" },
-                    { letter: "C", text: "People" },
-                    { letter: "D", text: "Networks" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - People - الأشخاص (People) هم المكون الأهم في نظام المعلومات."
-            },
-            {
-                q: "What determines hardware structure?",
-                options: [
-                    { letter: "A", text: "Color of the office" },
-                    { letter: "B", text: "Type and size of the organization" },
-                    { letter: "C", text: "The type of internet" },
-                    { letter: "D", text: "The number of users only" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - Type and size of the organization - بنية الأجهزة تُحدد بناءً على نوع وحجم المؤسسة."
-            },
-            {
-                q: "Which phase follows Analysis?",
-                options: [
-                    { letter: "A", text: "Planning" },
-                    { letter: "B", text: "Implementation" },
-                    { letter: "C", text: "System Design" },
-                    { letter: "D", text: "Maintenance" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - System Design - المرحلة التي تلي التحليل هي تصميم النظام (System Design)."
-            },
-            {
-                q: "Which involves creating a 'plan for a software solution'?",
-                options: [
-                    { letter: "A", text: "Maintenance" },
-                    { letter: "B", text: "System Design" },
-                    { letter: "C", text: "Sales" },
-                    { letter: "D", text: "Training" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - System Design - تصميم النظام يتضمن إنشاء خطة لحل برمجي."
-            },
-            {
-                q: "What does a circle or rounded rectangle represent in a DFD?",
-                options: [
-                    { letter: "A", text: "External Entity" },
-                    { letter: "B", text: "Data Store" },
-                    { letter: "C", text: "Process" },
-                    { letter: "D", text: "Data Flow" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - Process - الدائرة أو المستطيل المدور في مخطط تدفق البيانات (DFD) يمثل العملية (Process)."
-            },
-            {
-                q: "Which DFD level shows the most high-level view of a system?",
-                options: [
-                    { letter: "A", text: "Level 0" },
-                    { letter: "B", text: "Level 1" },
-                    { letter: "C", text: "Level 2" },
-                    { letter: "D", text: "Level 3" }
-                ],
-                correct: 0,
-                exp: "الإجابة: A - Level 0 - المستوى 0 (Level 0) يُظهر أعلى مستوى نظرة عامة للنظام."
-            },
-            {
-                q: "A data store is represented by which symbol?",
-                options: [
-                    { letter: "A", text: "Arrow" },
-                    { letter: "B", text: "Square" },
-                    { letter: "C", text: "Circle" },
-                    { letter: "D", text: "Open-ended rectangle" }
-                ],
-                correct: 3,
-                exp: "الإجابة: D - Open-ended rectangle - مخزن البيانات (Data Store) يُمثل بمستطيل مفتوح من طرف."
-            },
-            {
-                q: "Which of the following is NOT a component of a DFD?",
-                options: [
-                    { letter: "A", text: "Relationship" },
-                    { letter: "B", text: "Process" },
-                    { letter: "C", text: "Data Store" },
-                    { letter: "D", text: "External Entity" }
-                ],
-                correct: 0,
-                exp: "الإجابة: A - Relationship - العلاقة (Relationship) ليست مكونًا من مكونات DFD، بل هي خاصة بمخططات العلاقة بين الكيانات (ERDs)."
-            },
-            {
-                q: "Breaking a high-level process into smaller sub-processes is called:",
-                options: [
-                    { letter: "A", text: "Normalization" },
-                    { letter: "B", text: "Decomposition" },
-                    { letter: "C", text: "Integration" },
-                    { letter: "D", text: "Encapsulation" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - Decomposition - تفكيك العملية عالية المستوى إلى عمليات فرعية أصغر يُسمى التحليل (Decomposition)."
-            },
-            {
-                q: "Which DFD shows what the system does without implementation details?",
-                options: [
-                    { letter: "A", text: "Physical DFD" },
-                    { letter: "B", text: "Logical DFD" },
-                    { letter: "C", text: "Implementation DFD" },
-                    { letter: "D", text: "Context DFD" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - Logical DFD - مخطط تدفق البيانات المنطقي (Logical DFD) يُظهر ما يفعله النظام بدون تفاصيل التنفيذ."
-            },
-            {
-                q: "Which of these is used to describe the logic inside a process?",
-                options: [
-                    { letter: "A", text: "Structured English" },
-                    { letter: "B", text: "Data Store" },
-                    { letter: "C", text: "External Entity" },
-                    { letter: "D", text: "Data Flow" }
-                ],
-                correct: 0,
-                exp: "الإجابة: A - Structured English - الإنجليزية المنظمة (Structured English) تُستخدم لوصف المنطق داخل العملية."
-            },
-            {
-                q: "What is the main benefit of using DFDs?",
-                options: [
-                    { letter: "A", text: "Easy for technical and non-technical users to understand" },
-                    { letter: "B", text: "Shows exact hardware requirements" },
-                    { letter: "C", text: "Generates automatic code" },
-                    { letter: "D", text: "Replaces the need for testing" }
-                ],
-                correct: 0,
-                exp: "الإجابة: A - Easy for technical and non-technical users to understand - الفائدة الرئيسية من DFDs هي سهولة الفهم للفنيين وغير الفنيين."
-            },
-            {
-                q: "The 'Context Diagram' contains how many processes?",
-                options: [
-                    { letter: "A", text: "Zero" },
-                    { letter: "B", text: "One" },
-                    { letter: "C", text: "Five" },
-                    { letter: "D", text: "Unlimited" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - One - مخطط السياق (Context Diagram) يحتوي على عملية واحدة فقط."
-            },
-            {
-                q: "A DFD is a tool for:",
-                options: [
-                    { letter: "A", text: "Process modeling" },
-                    { letter: "B", text: "Data modeling" },
-                    { letter: "C", text: "Network modeling" },
-                    { letter: "D", text: "Object modeling" }
-                ],
-                correct: 0,
-                exp: "الإجابة: A - Process modeling - DFD هو أداة لنمذجة العمليات (Process modeling)."
-            },
-            {
-                q: "Which symbol is used for an external entity?",
-                options: [
-                    { letter: "A", text: "Square/Rectangle" },
-                    { letter: "B", text: "Circle" },
-                    { letter: "C", text: "Double Line" },
-                    { letter: "D", text: "Oval" }
-                ],
-                correct: 0,
-                exp: "الإجابة: A - Square/Rectangle - الكيان الخارجي (External Entity) يُمثل بمربع/مستطيل."
-            },
-            {
-                q: "SSAD stands for:",
-                options: [
-                    { letter: "A", text: "Simple System Analysis Design" },
-                    { letter: "B", text: "Structured System Analysis Design" },
-                    { letter: "C", text: "Standard System Analysis Development" },
-                    { letter: "D", text: "Sequential System Analysis Design" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - Structured System Analysis Design - SSAD تعني التحليل والتصميم المنظم للنظام."
-            },
-            {
-                q: "In a DFD, data flow can occur between:",
-                options: [
-                    { letter: "A", text: "Two data stores" },
-                    { letter: "B", text: "Two external entities" },
-                    { letter: "C", text: "A process and a data store" },
-                    { letter: "D", text: "An external entity and a data store" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - A process and a data store - في DFD، يمكن أن يحدث تدفق البيانات بين عملية ومخزن بيانات."
-            },
-            {
-                q: "The document that defines all data elements in the DFD is the:",
-                options: [
-                    { letter: "A", text: "System Manual" },
-                    { letter: "B", text: "Data Dictionary" },
-                    { letter: "C", text: "Project Plan" },
-                    { letter: "D", text: "Design Specification" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - Data Dictionary - قاموس البيانات (Data Dictionary) هو المستند الذي يُعرف جميع عناصر البيانات في DFD."
-            },
-            {
-                q: "What is a 'Grey Hole' in a DFD?",
-                options: [
-                    { letter: "A", text: "A process with no output" },
-                    { letter: "B", text: "A process with no input" },
-                    { letter: "C", text: "A process where output is insufficient based on input" },
-                    { letter: "D", text: "A process that works perfectly" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - A process where output is insufficient based on input - 'الثقب الرمادي' (Grey Hole) هو عملية يكون فيها الإخراج غير كافٍ بناءً على الإدخال."
-            },
-            {
-                q: "By normalizing relations or sets of relations, one minimizes ___.",
-                options: [
-                    { letter: "A", text: "Data" },
-                    { letter: "B", text: "Fields" },
-                    { letter: "C", text: "Redundancy" },
-                    { letter: "D", text: "Database" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - Redundancy - بتطبيع العلاقات، يتم تقليل التكرار (Redundancy)."
-            },
-            {
-                q: "Which of the following is NOT a component of an information system?",
-                options: [
-                    { letter: "A", text: "Hardware" },
-                    { letter: "B", text: "Software" },
-                    { letter: "C", text: "Marketing" },
-                    { letter: "D", text: "Procedures" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - Marketing - التسويق هو وظيفة تجارية، وليس مكونًا أساسيًا لنظام المعلومات."
-            },
-            {
-                q: "Raw facts before processing are called:",
-                options: [
-                    { letter: "A", text: "Information" },
-                    { letter: "B", text: "Data" },
-                    { letter: "C", text: "Output" },
-                    { letter: "D", text: "Knowledge" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - Data - الحقائق الخام قبل المعالجة تُسمى بيانات (Data)."
-            },
-            {
-                q: "Which software controls hardware?",
-                options: [
-                    { letter: "A", text: "Application Software" },
-                    { letter: "B", text: "Utility Software" },
-                    { letter: "C", text: "System Software" },
-                    { letter: "D", text: "Antivirus" }
-                ],
-                correct: 2,
-                exp: "الإجابة: C - System Software - برامج النظام (مثل أنظمة التشغيل) هي التي تتحكم في الأجهزة."
-            },
-            {
-                q: "DBMS is mainly used to:",
-                options: [
-                    { letter: "A", text: "Delete hardware" },
-                    { letter: "B", text: "Manage databases" },
-                    { letter: "C", text: "Replace employees" },
-                    { letter: "D", text: "Increase CPU speed" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - Manage databases - DBMS تُستخدم بشكل أساسي لإدارة قواعد البيانات."
-            },
-            {
-                q: "Which is an example of an information system?",
-                options: [
-                    { letter: "A", text: "Online banking system" },
-                    { letter: "B", text: "Mouse" },
-                    { letter: "C", text: "Printer cable" },
-                    { letter: "D", text: "Scanner only" }
-                ],
-                correct: 0,
-                exp: "الإجابة: A - Online banking system - نظام الخدمات المصرفية عبر الإنترنت هو مثال على نظام معلومات."
-            },
-            {
-                q: "Procedures help organizations to:",
-                options: [
-                    { letter: "A", text: "Increase processor speed" },
-                    { letter: "B", text: "Standardize workflow" },
-                    { letter: "C", text: "Remove software" },
-                    { letter: "D", text: "Delete data" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - Standardize workflow - الإجراءات تساعد المؤسسات على توحيد سير العمل."
-            },
-            {
-                q: "End users of an information system include:",
-                options: [
-                    { letter: "A", text: "Managers" },
-                    { letter: "B", text: "Accountants" },
-                    { letter: "C", text: "Engineers" },
-                    { letter: "D", text: "All of the above" }
-                ],
-                correct: 3,
-                exp: "الإجابة: D - All of the above - المستخدمون النهائيون يشملون المديرين والمحاسبين والمهندسين وغيرهم."
-            },
-            {
-                q: "An information system performs which cycle?",
-                options: [
-                    { letter: "A", text: "Delete → Ignore → Stop" },
-                    { letter: "B", text: "Input → Process → Output" },
-                    { letter: "C", text: "Print → Shut down" },
-                    { letter: "D", text: "Store → Forget" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - Input → Process → Output - نظام المعلومات يقوم بدورة: إدخال → معالجة → إخراج."
-            },
-            {
-                q: "Security devices belong to:",
-                options: [
-                    { letter: "A", text: "Hardware" },
-                    { letter: "B", text: "Software" },
-                    { letter: "C", text: "Procedures" },
-                    { letter: "D", text: "Data" }
-                ],
-                correct: 0,
-                exp: "الإجابة: A - Hardware - أجهزة الأمان (مثل جدران الحماية وأجهزة القياسات الحيوية) هي مكونات مادية (Hardware)."
-            },
-            {
-                q: "Utility software is mainly used to:",
-                options: [
-                    { letter: "A", text: "Play games" },
-                    { letter: "B", text: "Maintain and protect system" },
-                    { letter: "C", text: "Build hardware" },
-                    { letter: "D", text: "Replace OS" }
-                ],
-                correct: 1,
-                exp: "الإجابة: B - Maintain and protect system - برامج الأدوات المساعدة تُستخدم بشكل أساسي للصيانة وحماية النظام."
-            }
-        ];
-        let currentQuestion = 0;
-        let correctCount = 0;
-        let wrongCount = 0;
-        let answered = false;
+<div class="container">
+<div class="main-card">
+<div class="header">
+<h1>اختبار إدارة مشتريات ومخازن</h1>
+<p>اختبار تفاعلي شامل لكل الأسئلة</p>
+</div>
 
-        function renderQuestion() {
-            answered = false;
-            const container = document.getElementById('quiz-container');
-            const q = questions[currentQuestion];
-            
-            let optionsHtml = '';
-            q.options.forEach((opt, index) => {
-                optionsHtml += `
-                    <button class="option-btn" id="option-${index}" onclick="answer(${index})">
-                        <span class="option-letter">${opt.letter}</span>
-                        ${opt.text}
-                    </button>
-                `;
-            });
-            
-            container.innerHTML = `
-                <div class="question-card" id="question-card">
-                    <div class="question-number">السؤال ${currentQuestion + 1} من 50</div>
-                    <div class="question-text">${q.q}</div>
-                    <div class="options">
-                        ${optionsHtml}
-                    </div>
-                    <div class="feedback" id="feedback">
-                        <div class="feedback-title" id="feedback-title"></div>
-                        <div class="feedback-text" id="feedback-text"></div>
-                    </div>
-                    <button class="next-btn" id="next-btn" onclick="nextQuestion()">السؤال التالي ←</button>
-                </div>
-            `;
-            
-            updateProgress();
-        }
+<div class="section">
+<div id="mcqSection">
+<h2 class="section-title mcq-title">أسئلة الاختيار</h2>
+<form id="mcqForm"></form>
+</div>
 
-        function answer(selectedIndex) {
-            if (answered) return;
-            answered = true;
-            
-            const q = questions[currentQuestion];
-            const isCorrect = selectedIndex === q.correct;
-            const feedback = document.getElementById('feedback');
-            const feedbackTitle = document.getElementById('feedback-title');
-            const feedbackText = document.getElementById('feedback-text');
-            const nextBtn = document.getElementById('next-btn');
-            
-            // Highlight all options
-            q.options.forEach((opt, index) => {
-                const btn = document.getElementById(`option-${index}`);
-                btn.disabled = true;
-                
-                if (index === q.correct) {
-                    btn.classList.add('correct-answer');
-                } else if (index === selectedIndex && !isCorrect) {
-                    btn.classList.add('selected-wrong');
-                }
-            });
-            
-            // Show feedback
-            feedback.style.display = 'block';
-            if (isCorrect) {
-                correctCount++;
-                feedback.className = 'feedback correct-answer';
-                feedbackTitle.innerHTML = '🎉 إجابة صحيحة!';
-                document.getElementById('correct-count').textContent = correctCount;
-            } else {
-                wrongCount++;
-                feedback.className = 'feedback wrong-answer';
-                feedbackTitle.innerHTML = '😕 إجابة خاطئة';
-                document.getElementById('wrong-count').textContent = wrongCount;
-            }
-            
-            feedbackText.innerHTML = q.exp;
-            nextBtn.style.display = 'inline-block';
-        }
+<div id="tfSection" style="margin-top:50px;">
+<h2 class="section-title tf-title">أسئلة الصح والغلط</h2>
+<form id="tfForm"></form>
+</div>
 
-        function nextQuestion() {
-            currentQuestion++;
-            if (currentQuestion >= questions.length) {
-                showResults();
-            } else {
-                renderQuestion();
-            }
-        }
+<button type="button" onclick="showResult()">إنهاء الاختبار</button>
 
-        function updateProgress() {
-            document.getElementById('current-question').textContent = `${currentQuestion + 1}/50`;
-            const progress = ((currentQuestion + 1) / 50) * 100;
-            document.getElementById('progress-fill').style.width = progress + '%';
-        }
+<div id="result"></div>
+</div>
+</div>
 
-        function showResults() {
-            document.getElementById('quiz-container').style.display = 'none';
-            document.querySelector('.score-board').style.display = 'none';
-            document.querySelector('.progress-bar').style.display = 'none';
-            document.querySelector('.header').style.display = 'none';
-            
-            const resultsScreen = document.getElementById('results-screen');
-            resultsScreen.style.display = 'block';
-            
-            document.getElementById('final-score').textContent = `${correctCount}/50`;
-            
-            let message = '';
-            let emoji = '';
-            const percentage = (correctCount / 50) * 100;
-            
-            if (percentage >= 90) {
-                emoji = '🏆';
-                message = 'أداء ممتاز! أنت خبير في تحليل وتصميم النظم! 🌟';
-            } else if (percentage >= 70) {
-                emoji = '🎉';
-                message = 'أداء جيد جداً! استمر في التقدم! 👏';
-            } else if (percentage >= 50) {
-                emoji = '👍';
-                message = 'أداء مقبول. راجع الدروس وحاول مرة أخرى! 📚';
-            } else {
-                emoji = '💪';
-                message = 'لا تيأس! راجع المادة وحاول مرة أخرى، أنت قادر! 🌟';
-            }
-            
-            document.getElementById('result-emoji').textContent = emoji;
-            document.getElementById('result-message').textContent = message;
-        }
+<script>
 
-        function restartQuiz() {
-            currentQuestion = 0;
-            correctCount = 0;
-            wrongCount = 0;
-            answered = false;
-            
-            document.getElementById('quiz-container').style.display = 'block';
-            document.querySelector('.score-board').style.display = 'flex';
-            document.querySelector('.progress-bar').style.display = 'block';
-            document.querySelector('.header').style.display = 'block';
-            document.getElementById('results-screen').style.display = 'none';
-            
-            document.getElementById('correct-count').textContent = '0';
-            document.getElementById('wrong-count').textContent = '0';
-            
-            renderQuestion();
-        }
+const questions = [
 
-        // Start the quiz
-        renderQuestion();
-    </script>
+// اختر
+
+{
+ type:'mcq',
+ q:'1- من مصادر المعلومات عن الموردين؟',
+ options:['العميل','الدليل التجاري','الرقابة','لا شيء مما سبق'],
+ answer:'الدليل التجاري'
+},
+{
+ type:'mcq',
+ q:'2- من إيجابيات التعامل مع مورد واحد؟',
+ options:['صعوبة الإجراءات','خفض المخاطر','خفض التكاليف','زيادة التكاليف'],
+ answer:'خفض التكاليف'
+},
+{
+ type:'mcq',
+ q:'3- من أسباب إستراتيجية التعامل مع المنتج مباشرة بدلاً من الموزع؟',
+ options:['عدم توافر المنتج','صغر حجم الكمية','البيع نقدًا','كبر حجم الكمية المشتراة'],
+ answer:'كبر حجم الكمية المشتراة'
+},
+{
+ type:'mcq',
+ q:'4- من خصائص الإنتاج النمطي للسوق؟',
+ options:['تغيير تصميم المنتج','صعوبة التخطيط للإنتاج','مواد خام موحدة المواصفات','لا شيء مما سبق'],
+ answer:'مواد خام موحدة المواصفات'
+},
+{
+ type:'mcq',
+ q:'5- من التحديات التي تواجه مدير الاحتياجات في شركة المقاولات؟',
+ options:['قلة الوسطاء','بعد التسعير','توريد كميات كبيرة للموقع','الإنتاج'],
+ answer:'توريد كميات كبيرة للموقع'
+},
+{
+ type:'mcq',
+ q:'6- تُعرف إجراءات الشراء بأنها؟',
+ options:['التسويق','البيع','خطوات افتراضية','الخطوات التفصيلية التي يتبعها مسئول الشراء'],
+ answer:'الخطوات التفصيلية التي يتبعها مسئول الشراء'
+},
+{
+ type:'mcq',
+ q:'7- من المشكلات التي تواجه مدير الاحتياجات بعد إتمام التنفيذ؟',
+ options:['التسويق','البيع','المنتجين','تخزين بواقي المستلزمات والمعدات'],
+ answer:'تخزين بواقي المستلزمات والمعدات'
+},
+{
+ type:'mcq',
+ q:'8- من الاعتبارات التي يجب مراعاتها عند تحديد إجراءات الشراء؟',
+ options:['سهولة فهم الإجراءات','صعوبة فهم الإجراءات','عدم تدوينها','عدم نشرها'],
+ answer:'سهولة فهم الإجراءات'
+},
+{
+ type:'mcq',
+ q:'9- من متطلبات التجارة الإلكترونية توفير موارد بشرية تكون خبرتها؟',
+ options:['بدون خبرة','عالية','متوسطة','منخفضة'],
+ answer:'عالية'
+},
+{
+ type:'mcq',
+ q:'10- ما المقصود بنظام ERP؟',
+ options:['نظام تقليدي','نظام افتراضي','يربط بين كل أقسام المنظمة','نظام للحسابات فقط'],
+ answer:'يربط بين كل أقسام المنظمة'
+},
+{
+ type:'mcq',
+ q:'11- من العوامل الاجتماعية المؤثرة في قرار الشراء؟',
+ options:['الضمان','الجماعة المحيطة بالمستهلك','رأس المال','السعر'],
+ answer:'الجماعة المحيطة بالمستهلك'
+},
+{
+ type:'mcq',
+ q:'12- الهدف الرئيسي من التخطيط للشراء؟',
+ options:['التخزين العشوائي','الشراء على أساس علمي','تعقيد الشراء','خفض الأرباح'],
+ answer:'الشراء على أساس علمي'
+},
+{
+ type:'mcq',
+ q:'13- من مخاطر الشراء حسب الحاجة؟',
+ options:['انخفاض الجودة','زيادة المخزون','توقف الإنتاج بسبب التأخير','خفض الأسعار'],
+ answer:'توقف الإنتاج بسبب التأخير'
+},
+{
+ type:'mcq',
+ q:'14- تحقيق المرونة في الإجراءات يقصد به؟',
+ options:['الانسجام والتوافق','إمكانية التعديل والتغيير','عدم التعديل','الخصم'],
+ answer:'إمكانية التعديل والتغيير'
+},
+{
+ type:'mcq',
+ q:'15- يهدف أسلوب الشراء للمضاربة إلى؟',
+ options:['خسارة المنظمة','تحقيق ربح نتيجة تغيرات الأسعار','سمعة المنظمة','زيادة تكاليف النقل'],
+ answer:'تحقيق ربح نتيجة تغيرات الأسعار'
+},
+{
+ type:'mcq',
+ q:'16- الشراء الاستهلاكي يهدف إلى؟',
+ options:['صعوبة الإجراءات','إشباع الحاجة','التخزين','زيادة التكاليف'],
+ answer:'إشباع الحاجة'
+},
+{
+ type:'mcq',
+ q:'17- يتحقق الوقت المناسب للشراء عندما يتم الحصول على الأصناف في وقت؟',
+ options:['الشراء ذاته','يناسب احتياجات الإنتاج','زيادة التكاليف','زيادة الأسعار'],
+ answer:'يناسب احتياجات الإنتاج'
+},
+{
+ type:'mcq',
+ q:'18- أي مستوى إداري يركز على دعم اتخاذ القرارات الاستراتيجية؟',
+ options:['الإدارة الدنيا','الإدارة الوسطى','الإدارة العليا','لا شيء مما سبق'],
+ answer:'الإدارة العليا'
+},
+
+// صح وغلط
+
+{type:'tf', q:'1- يقصد بمصدر الشراء المناسب التعرف على الموردين واختيار أفضلهم.', answer:'صح'},
+{type:'tf', q:'2- سياسة التصنيع تعني الاعتماد على الإنتاج الداخلي بدلاً من الشراء من الخارج.', answer:'صح'},
+{type:'tf', q:'3- من المعايير المهمة لاختيار المورد سمعة المورد في السوق.', answer:'صح'},
+{type:'tf', q:'4- مرحلة المسح العام للمصادر هي المرحلة الأولى في عملية اختيار المورد.', answer:'صح'},
+{type:'tf', q:'5- مدير الاحتياجات في شركة المقاولات له دور هام في زيادة التكاليف.', answer:'خطأ'},
+{type:'tf', q:'6- يفضل التعامل مع المورد الذي يمتلك طاقة إنتاجية احتياطية.', answer:'صح'},
+{type:'tf', q:'7- من مصادر المعلومات عن الموردين الإعلانات والكتالوجات.', answer:'صح'},
+{type:'tf', q:'8- من أسباب تفضيل التعامل مع مورد واحد زيادة المنافسة بين الموردين.', answer:'خطأ'},
+{type:'tf', q:'9- يتم التعامل مع المنتج مباشرة عندما تكون الكمية صغيرة.', answer:'خطأ'},
+{type:'tf', q:'10- من أسباب تفضيل المصادر المحلية سرعة تسليم الطلبيات.', answer:'صح'},
+{type:'tf', q:'11- من أنواع النشاط الإنتاجي الإنتاج النمطي والإنتاج حسب الطلب.', answer:'صح'},
+{type:'tf', q:'12- من خصائص الإنتاج النمطي القدرة على التخطيط المسبق.', answer:'صح'},
+{type:'tf', q:'13- في الإنتاج حسب الطلب تكون المواد الخام موحدة المواصفات.', answer:'خطأ'},
+{type:'tf', q:'14- من خصائص الإنتاج حسب الطلب سهولة تقدير الاحتياجات مقدماً.', answer:'خطأ'},
+{type:'tf', q:'15- الإنتاج النمطي يسمح بالتوسع في التكنولوجيا.', answer:'صح'},
+{type:'tf', q:'16- المواد الخام في الإنتاج النمطي غير موحدة المواصفات.', answer:'خطأ'},
+{type:'tf', q:'17- الإنتاج النمطي يتميز بعدم القدرة على التخطيط المسبق.', answer:'خطأ'},
+{type:'tf', q:'18- لا يشترط نشر الإجراءات على العاملين.', answer:'خطأ'},
+{type:'tf', q:'19- المقصود بالشراء مجموعة أنشطة لتوفير المواد في الوقت والسعر المناسب.', answer:'صح'},
+{type:'tf', q:'20- طريقة الأسماء والعلامات التجارية تعتبر من طرق تحديد الجودة.', answer:'صح'},
+{type:'tf', q:'21- الهدف من الإجراءات هو توحيد طرق العمل داخل المنظمة.', answer:'صح'},
+{type:'tf', q:'22- من خصائص المقاولات عدم معرفة نوعية الأعمال مسبقاً.', answer:'صح'},
+{type:'tf', q:'23- من إيجابيات التعامل مع عدة موردين تحقيق التنافسية.', answer:'صح'},
+{type:'tf', q:'24- تدفق الإنتاج في النظام النمطي يكون غير منتظم.', answer:'خطأ'},
+{type:'tf', q:'25- الإنتاج النمطي يحتاج مخزون لفترة قصيرة فقط.', answer:'خطأ'},
+{type:'tf', q:'26- يفضل التعامل مع المورد الذي لا يمتلك طاقة احتياطية.', answer:'خطأ'},
+{type:'tf', q:'27- تعريف إجراءات الشراء هو الخطوات التفصيلية المتكررة للمشتريات.', answer:'صح'},
+{type:'tf', q:'28- من أهمية تحديد إجراءات الشراء تعقيد طرق العمل.', answer:'خطأ'},
+{type:'tf', q:'29- تبدأ إجراءات الشراء بإصدار الفواتير.', answer:'خطأ'},
+{type:'tf', q:'30- يجب مراعاة التكاليف عند تنفيذ إجراءات الشراء.', answer:'صح'},
+{type:'tf', q:'31- من صور التخطيط للشراء وضع موازنة تقديرية.', answer:'صح'},
+{type:'tf', q:'32- الكتالوجات فقط تعتبر من مصادر المعلومات عن الموردين.', answer:'خطأ'},
+{type:'tf', q:'33- بعض السلع يجب شراؤها قبل الاستخدام بفترة طويلة.', answer:'صح'},
+{type:'tf', q:'34- الهدف من التخطيط للشراء أن يتم الشراء بشكل عشوائي.', answer:'خطأ'},
+{type:'tf', q:'35- تحقيق المرونة يعني عدم القدرة على التعديل.', answer:'خطأ'},
+{type:'tf', q:'36- تطور التكنولوجيا يساعد في تحقيق وفورات اقتصادية.', answer:'صح'},
+{type:'tf', q:'37- وظيفة الشراء لا تؤثر على القدرة التنافسية.', answer:'خطأ'},
+{type:'tf', q:'38- عدم الشراء في الوقت المناسب يسبب اضطرابات بالإنتاج.', answer:'صح'},
+{type:'tf', q:'39- نظام ERP جاء نتيجة تطور مفهوم الإدارة اللوجستية.', answer:'صح'},
+{type:'tf', q:'40- كلما زادت نفقات الشراء زاد صافي الربح.', answer:'خطأ'},
+{type:'tf', q:'41- الحفاظ على مخزون مرتفع دائماً أفضل وسيلة لتجنب توقف الإنتاج.', answer:'خطأ'},
+{type:'tf', q:'42- في الماضي كانت كل إدارة تقوم بالشراء بنفسها.', answer:'صح'},
+{type:'tf', q:'43- من أهداف الشراء تحسين المركز التنافسي للمنظمة.', answer:'صح'},
+{type:'tf', q:'44- الشراء للمستقبل يساعد في تخفيض التكاليف.', answer:'صح'},
+{type:'tf', q:'45- سياسات الإنتاج من المتغيرات الخارجية.', answer:'خطأ'},
+{type:'tf', q:'46- يجب توافر المواد الخام من حيث الكمية والزمن والجودة.', answer:'صح'},
+{type:'tf', q:'47- من عيوب التجارة الإلكترونية الإخطار السريع للتعديلات.', answer:'خطأ'},
+{type:'tf', q:'48- استخدام ERP يقلل الفاقد ويحسن الرقابة على المخزون.', answer:'صح'},
+{type:'tf', q:'49- من أهداف الشراء خفض التكاليف وتحسين الكفاءة.', answer:'صح'},
+{type:'tf', q:'50- من مميزات الشراء الإلكتروني سرعة إنجاز المعاملات.', answer:'صح'},
+{type:'tf', q:'51- التكلفة في نظام الإمداد الإلكتروني تكون مرتفعة.', answer:'خطأ'},
+{type:'tf', q:'52- النظام الإلكتروني يقلل الأخطاء الناتجة عن الإدخال اليدوي.', answer:'صح'}
+];
+
+const mcqForm = document.getElementById('mcqForm');
+const tfForm = document.getElementById('tfForm');
+
+questions.forEach((item,index)=>{
+
+const div = document.createElement('div');
+div.classList.add('question');
+
+let html = `<h3>${item.q}</h3>`;
+
+if(item.type === 'mcq'){
+
+item.options.forEach(option=>{
+html += `
+<label>
+<input type="radio" name="q${index}" value="${option}">
+${option}
+</label>
+`;
+});
+
+}else{
+
+html += `
+<label><input type="radio" name="q${index}" value="صح"> صح</label>
+<label><input type="radio" name="q${index}" value="خطأ"> خطأ</label>
+`;
+}
+
+html += `<div id="feedback${index}"></div>`;
+
+div.innerHTML = html;
+if(item.type === 'mcq'){
+mcqForm.appendChild(div);
+}else{
+tfForm.appendChild(div);
+}
+
+const radios = div.querySelectorAll('input');
+
+radios.forEach(radio=>{
+radio.addEventListener('change',()=>{
+
+const feedback = document.getElementById(`feedback${index}`);
+
+if(radio.value === item.answer){
+feedback.innerHTML = '✔ إجابة صحيحة';
+feedback.className = 'correct';
+}else{
+feedback.innerHTML = `✘ إجابة خاطئة — الإجابة الصحيحة: ${item.answer}`;
+feedback.className = 'wrong';
+}
+
+});
+});
+
+});
+
+function showResult(){
+
+let score = 0;
+
+questions.forEach((item,index)=>{
+
+const selected = document.querySelector(`input[name="q${index}"]:checked`);
+
+if(selected && selected.value === item.answer){
+score++;
+}
+
+});
+
+const percentage = ((score/questions.length)*100).toFixed(1);
+
+document.getElementById('result').innerHTML = `
+درجتك النهائية: ${score} من ${questions.length}<br>
+النسبة المئوية: ${percentage}%
+`;
+
+window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+
+</script>
+
 </body>
 </html>
